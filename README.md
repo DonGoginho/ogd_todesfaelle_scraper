@@ -41,11 +41,21 @@ python scrape.py
 
 Der Workflow `.github/workflows/scrape.yml` läuft am 8. jedes Monats automatisch und committed neue Daten ins Repository. Er kann auch manuell über die GitHub-Oberfläche gestartet werden (Actions > "Todesfälle scrapen" > "Run workflow").
 
-## Datenquelle
+## Datenquelle und technische Funktionsweise
 
-Die Daten werden über die AEM JSON-API von stadt-zuerich.ch bezogen. Die Originaldaten werden vom Bevölkerungsamt der Stadt Zürich monatlich publiziert unter:
+Die Originaldaten werden vom Bevölkerungsamt der Stadt Zürich monatlich publiziert unter:
 
 https://www.stadt-zuerich.ch/de/lebenslagen/tod/todesfaelle.html
+
+Die Webseite rendert die Inhalte clientseitig per JavaScript. Der Scraper umgeht dies, indem er direkt die JSON-API des darunterliegenden **Adobe Experience Manager (AEM)** CMS anspricht. Die Daten werden in drei Schritten abgefragt:
+
+1. **Jahre entdecken** — `https://www.stadt-zuerich.ch/de/lebenslagen/tod/todesfaelle.1.json` liefert alle verfügbaren Jahresseiten (z.B. 2023, 2024, 2025, 2026) als Kind-Knoten vom Typ `cq:Page`.
+
+2. **Monate entdecken** — `.../{year}.1.json` liefert die verfügbaren Monatsseiten pro Jahr (z.B. `januar`, `februar`, `maerz`, ...). Die deutschen Monatsnamen sind Teil der URL-Struktur (`maerz` statt `märz`).
+
+3. **Tabellendaten laden** — `.../{year}/{month}/_jcr_content/mainparsys.1.json` enthält die AEM-Komponenten der Seite. Die Todesfälle sind als HTML-Tabelle in der `tableData`-Property einer Tabellenkomponente gespeichert. Diese HTML-Tabelle wird mit BeautifulSoup geparst.
+
+Beim inkrementellen Update (`python scrape.py` ohne `--full`) werden nur Monate geladen, die noch nicht in der bestehenden CSV enthalten sind.
 
 ## Lizenz
 
