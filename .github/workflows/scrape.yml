@@ -12,6 +12,8 @@ permissions:
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
     steps:
       - uses: actions/checkout@v5
 
@@ -32,3 +34,19 @@ jobs:
           git add data/
           git diff --cached --quiet || git commit -m "Update Todesfälle $(date +%Y-%m-%d)"
           git push
+
+      - name: Upload file to CKAN
+        env:
+          CKAN_BASE_URL: ${{ secrets.CKAN_BASE_URL }}
+          CKAN_API_KEY: ${{ secrets.CKAN_API_KEY }}
+          SSL_VERIFY: ${{ secrets.SSL_VERIFY }}
+        run: |
+          python upload_resource_to_ckan.py -f data/todesfaelle_stadt_zuerich.csv -d prd_bva_todesfaelle_publiziert
+
+      - name: Update CKAN metadata
+        env:
+          CKAN_BASE_URL: ${{ secrets.CKAN_BASE_URL }}
+          CKAN_API_KEY: ${{ secrets.CKAN_API_KEY }}
+          SSL_VERIFY: ${{ secrets.SSL_VERIFY }}
+        run: |
+          python update_metadata.py -d prd_bva_todesfaelle_publiziert

@@ -22,6 +22,22 @@ Verfügbare Daten: ab 2023 (abhängig von der Publikation durch das Bevölkerung
 
 **Format**: UTF-8, Komma-separiert (RFC 4180).
 
+### Erweiterung Datenqualität
+
+- **Duplikate**: Einzelne Personen erscheinen in mehreren Monats-Publikationen (identische Personendaten und identisches Sterbedatum, aber unterschiedlicher Todesmonat). Das CSV bildet die Quelle derzeit 1:1 ab — eine Deduplizierung ist noch nicht implementiert.
+
+- **Grosse Abweichung zwischen Todesmonat und Sterbedatum**: Bei einem Teil der Einträge liegt der Todesmonat (= Publikationsmonat) deutlich nach dem Sterbedatum. Von rund 9500 Einträgen weisen 208 eine Differenz von mehr als 3 Monaten auf, 60 von mehr als 6 Monaten und 23 von mehr als einem Jahr. Beispiele:
+
+  | Todesmonat | Name | Vorname | Sterbedatum | Differenz |
+  |---|---|---|---|---|
+  | 2024-07 | Walter | Theodore Eric | 2019-02-04 | ~5 Jahre |
+  | 2023-07 | Hinrichsen | Aino | 2018-10-08 | ~5 Jahre |
+  | 2024-03 | Leutert-Korga | Teresa-Julia | 2021-01-06 | ~3 Jahre |
+
+  Mögliche Gründe sind verspätete Meldungen, Nachregistrierungen oder Todesfälle im Ausland, die erst später beim Bevölkerungsamt erfasst werden.
+
+- **Vermutlicher Datenfehler**: Ein Eintrag (Todesmonat 2025-06, Sterbedatum 2005-04-03) weist eine Differenz von rund 20 Jahren auf. Dies ist mit hoher Wahrscheinlichkeit ein Erfassungsfehler in der Quelle.
+
 ## Nutzung
 
 ### Erstmaliger Lauf (alle Daten laden)
