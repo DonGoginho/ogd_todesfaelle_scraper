@@ -94,13 +94,14 @@ def parse_table(html: str, year: str, month: str) -> list[dict]:
     records = []
     for row in rows[1:]:
         cells = row.find_all("td")
-        if len(cells) < 8:
-            continue
-
         values = [c.get_text(strip=True) for c in cells]
-        name, vorname, jahrgang, strasse, nummer, plz, ort, sterbedatum_raw = values[:8]
-
-        sterbedatum = convert_date(sterbedatum_raw)
+        if len(cells) >= 8:
+            name, vorname, jahrgang, strasse, nummer, plz, ort, sterbedatum_raw = values[:8]
+        elif len(cells) >= 6:
+            name, vorname, jahrgang, plz, ort, sterbedatum_raw = values[:6]
+            strasse, nummer = "", ""
+        else:
+            continue
 
         records.append({
             "Todesmonat": todesmonat,
@@ -111,7 +112,7 @@ def parse_table(html: str, year: str, month: str) -> list[dict]:
             "Nummer": nummer,
             "PLZ": plz,
             "Ort": ort,
-            "Sterbedatum": sterbedatum,
+            "Sterbedatum": convert_date(sterbedatum_raw),
         })
 
     return records
